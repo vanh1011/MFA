@@ -1,0 +1,100 @@
+.tile-top h2 {
+  overflow-wrap: anywhere !important;
+  white-space: normal !important;
+  font-family: "JetBrains Mono", monospace !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+
+.format-hint {
+  display: none !important;
+}
+
+.language-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+}
+
+.language-switch svg { margin: 0 3px; }
+.language-switch button {
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  font: 700 10px/1 Geist, sans-serif;
+  padding: 5px 6px;
+}
+.language-switch button.active { background: var(--accent-soft); color: var(--accent); }
+.theme-toggle { color: var(--muted) !important; }
+
+.board-page.light {
+  --bg: #f4f7f4;
+  --surface: #ffffff;
+  --surface-2: #f7fbf8;
+  --line: #d4dfd6;
+  --text: #152019;
+  --muted: #607066;
+  --accent: #27834e;
+  --accent-soft: #e2f2e7;
+  --danger: #b63d36;
+  background: radial-gradient(ellipse 90% 45% at 50% -15%, #d9eee0 0, transparent 62%), var(--bg);
+}
+.board-page.light .topbar { border-color: #d4dfd6; }
+.board-page.light .composer { background: rgba(255, 255, 255, .9); box-shadow: inset 0 1px rgba(255,255,255,.8), 0 20px 60px rgba(36,72,47,.08); }
+.board-page.light .batch-input { background: #fbfdfb !important; border-color: #c7d7cb !important; color: var(--text) !important; }
+.board-page.light .code-tile { background: rgba(255,255,255,.82); }
+.board-page.light .empty-mark { background: #e9f5ec; border-color: #b9d8c1; }
+.board-page.light .account-initial { background: #d9eee0; color: #1d6139; }
+.board-page.light .clear-button, .board-page.light .theme-toggle { color: #405247 !important; }
+.board-page.light .language-switch button.active { background: #dff0e4; color: #1f6b40; }
+
+@media (max-width: 760px) {
+  .language-switch svg { display: none; }
+  .language-switch button { padding-inline: 5px; }
+}
+
+/* Dark-mode contrast is explicit because shadcn's muted token is otherwise too dim here. */
+.board-page.dark .composer-title span { color: #8fe7ae !important; }
+.board-page.dark .composer-footer,
+.board-page.dark .empty-board p,
+.board-page.dark .privacy-note,
+.board-page.dark .session-note,
+.board-page.dark .tile-top p,
+.board-page.dark .code-section-header,
+.board-page.dark .language-switch { color: #b9c8bf !important; }
+.board-page.dark .batch-input::placeholder { color: #b4c1ba !important; opacity: 1 !important; }
+.board-page.dark .batch-input { color: #f0f5f1 !important; }
+.board-page.dark .add-codes { background: #78dca0 !important; color: #082917 !important; }
+.board-page.dark .empty-board h2,
+.board-page.dark .composer-title b,
+.board-page.dark .board-heading h1 { color: #f3f7f4 !important; }
+
+.board-page.dark .composer-footer,
+.board-page.dark .empty-board p,
+.board-page.dark .privacy-note,
+.board-page.dark .tile-top p,
+.board-page.dark .code-section-header { color: #d0ddd5 !important; }
+.board-page.dark .batch-input::placeholder { color: #d7e1db !important; }
+.board-page.dark .code-button span { color: #d7e2db !important; }
+.board-page.dark .brand-mark { background: #78dca0 !important; color: #082917 !important; }
+.board-page.dark .empty-mark { background: #17472a !important; border-color: #75d59a !important; color: #b4f0c8 !important; }
+.board-page.dark .brand-mark svg,
+.board-page.dark .empty-mark svg { opacity: 1 !important; }
+
+.board-page.light .composer-footer,
+.board-page.light .empty-board p,
+.board-page.light .privacy-note,
+.board-page.light .session-note,
+.board-page.light .tile-top p,
+.board-page.light .code-section-header,
+.board-page.light .language-switch { color: #385044 !important; }
+.board-page.light .batch-input::placeholder { color: #4b6254 !important; opacity: 1 !important; }
+.board-page.light .code-button span { color: #315a42 !important; }
+.board-page.light .clear-button { color: #254433 !important; }
+.board-page.light .brand-mark { background: #21834d !important; color: #f4fff7 !important; }
+.board-page.light .empty-mark { background: #e1f4e7 !important; border-color: #9fcead !important; color: #176f3d !important; }
