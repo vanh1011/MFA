@@ -1,32 +1,54 @@
-# React + TypeScript + Vite
+# 🔐 MFA Authenticator
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A lightweight, privacy-first **2FA/TOTP authenticator** that runs entirely in your browser. No server, no cloud — your keys never leave your device.
 
-Currently, two official plugins are available:
+## ✨ Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **TOTP Code Generation** — Generate time-based one-click 2FA codes (RFC 6238)
+- **Multi-key Support** — Paste multiple keys at once, one per line
+- **OTPAuth URI** — Supports standard `otpauth://totp/...` URI format
+- **Multi-language** — Vietnamese, English, and German
+- **Dark / Light Mode** — Toggle theme with one click
+- **Copy to Clipboard** — One-click copy with visual feedback
+- **Privacy First** — All processing happens client-side, keys are session-only and never stored
 
-## React Compiler
+## 🛠 Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Layer       | Technology                         |
+| ----------- | ---------------------------------- |
+| Framework   | React 19 + TypeScript              |
+| Build       | Vite 8                             |
+| Styling     | Tailwind CSS 4 + tw-animate-css    |
+| UI          | shadcn/ui (Base UI) + CVA          |
+| Icons       | Phosphor Icons                     |
+| OTP Engine  | [otpauth](https://github.com/nicatronTg/otpauth) |
+| Font        | Geist Variable                     |
 
-## Expanding the Oxlint configuration
+## 🚀 Getting Started
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+```bash
+# Install dependencies
+npm install
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+# Start dev server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## 📖 Usage
+
+1. Open the app in your browser
+2. Paste your 2FA secret key (or `otpauth://` URI) into the text area
+3. Click **"Get codes"** to generate TOTP codes
+4. Copy the 6-digit code and use it to log in
+
+> **Note:** Keys are processed entirely on your device and are not saved anywhere. Refreshing the page will clear all keys.
+
+## 📄 License
+
+MIT
