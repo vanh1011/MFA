@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { TOTP } from 'otpauth'
-import { ArrowRight, ArrowsClockwise, Check, Copy, CrosshairSimple, DownloadSimple, Globe, Key, MapPin, Moon, Network, Plus, ShieldCheck, Sun, Trash, WarningCircle, WifiHigh, X } from '@phosphor-icons/react'
+import { ArrowRight, ArrowsClockwise, Check, Copy, CrosshairSimple, DownloadSimple, Globe, Key, MapPin, Moon, Network, Plus, ShieldCheck, Sun, Trash, UploadSimple, WarningCircle, WifiHigh, X } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -41,9 +41,9 @@ const installCopy = {
     tabs: { ios: 'iPhone / iPad', android: 'Android', desktop: 'Máy tính' },
     label: 'DÙNG NHƯ ỨNG DỤNG',
     steps: {
-      ios: ['Mở trang này bằng Safari.', 'Bấm nút Chia sẻ ở thanh công cụ Safari.', 'Chọn “Thêm vào Màn hình chính”, rồi bấm “Thêm”.'],
-      android: ['Mở trang này bằng Chrome.', 'Bấm menu ⋮ ở góc trên bên phải.', 'Chọn “Cài đặt ứng dụng” hoặc “Thêm vào Màn hình chính”.'],
-      desktop: ['Mở trang này bằng Chrome hoặc Edge.', 'Bấm biểu tượng cài đặt ở thanh địa chỉ, hoặc mở menu trình duyệt.', 'Chọn “Cài app” để mở Kira Tech 2FA trong cửa sổ riêng.'],
+      ios: ['Mở Safari, bấm nút Chia sẻ ở thanh dưới.', 'Chọn “Thêm vào Màn hình chính”.', 'Bấm “Thêm” — icon Kira Tech 2FA sẽ xuất hiện trên màn hình chính.'],
+      android: ['Mở Chrome, bấm menu ⋮ ở góc trên.', 'Chọn “Cài đặt ứng dụng” hoặc “Thêm vào màn hình chính”.', 'Xác nhận — Kira Tech 2FA sẽ hiển thị như app thật.'],
+      desktop: ['Mở Chrome hoặc Edge, để ý biểu tượng cài đặt trên thanh địa chỉ.', 'Bấm vào biểu tượng và chọn “Cài app”.', 'Kira Tech 2FA sẽ mở trong cửa sổ riêng như app desktop.'],
     },
     tip: 'Không thấy tuỳ chọn? Hãy mở bằng trình duyệt Safari, Chrome hoặc Edge — không dùng tab trong Facebook, Zalo hay ứng dụng khác.',
   },
@@ -373,7 +373,7 @@ function App() {
       {hostedResult && <section className="domain-result"><div className="domain-result-title"><span>{t.hostedTab}</span><h2>{hostedResult.ip}</h2></div><div className="ip-grid"><InfoCard label={t.hostedCount} value={String(hostedResult.total ?? 0)} /><InfoCard label="Page" value={`${hostedResult.page ?? 1} / ${hostedResult.pages ?? 1}`} /></div><div className="nameservers"><span>{t.domainTab}</span>{hostedResult.domains.length ? <ul>{hostedResult.domains.map(item => <li key={item}>{item}</li>)}</ul> : <strong>{t.noDomains}</strong>}</div></section>}
     </section>}
     {toast && <div className="toast-notification" role="status"><span><Check size={18} weight="bold"/></span>{toast}</div>}
-    {installHelpOpen && <div className="install-dialog-backdrop" role="presentation" onClick={() => setInstallHelpOpen(false)}><section className="install-dialog" role="dialog" aria-modal="true" aria-labelledby="install-dialog-title" onClick={event => event.stopPropagation()}><div className="install-dialog-handle"/><Button variant="ghost" size="icon-sm" className="install-dialog-close" onClick={() => setInstallHelpOpen(false)} aria-label={t.installClose}><X size={18}/></Button><span className="install-dialog-icon"><DownloadSimple size={22} weight="bold"/></span><span className="install-dialog-label">{installGuide.label}</span><h2 id="install-dialog-title">{t.installTitle}</h2><div className="install-tabs" role="tablist">{(['ios', 'android', 'desktop'] as InstallPlatform[]).map(platform => <button key={platform} className={installPlatform === platform ? 'active' : ''} onClick={() => setInstallPlatform(platform)} role="tab" aria-selected={installPlatform === platform}>{installGuide.tabs[platform]}</button>)}</div><ol className="install-steps">{installGuide.steps[installPlatform].map((step, index) => <li key={step}><span className="install-step-number">{index + 1}</span><span>{step}</span><span className="install-step-icon">{index === 0 ? <Globe size={20}/> : index === 1 ? <Plus size={21}/> : <Check size={20} weight="bold"/>}</span></li>)}</ol><p className="install-tip">{installGuide.tip}</p></section></div>}
+    {installHelpOpen && <div className="install-dialog-backdrop" role="presentation" onClick={() => setInstallHelpOpen(false)}><section className="install-dialog" role="dialog" aria-modal="true" aria-labelledby="install-dialog-title" onClick={event => event.stopPropagation()}><div className="install-dialog-handle"/><Button variant="ghost" size="icon-sm" className="install-dialog-close" onClick={() => setInstallHelpOpen(false)} aria-label={t.installClose}><X size={18}/></Button><span className="install-dialog-icon"><DownloadSimple size={22} weight="bold"/></span><span className="install-dialog-label">{installGuide.label}</span><h2 id="install-dialog-title">{t.installTitle}</h2><div className="install-tabs" role="tablist">{(['ios', 'android', 'desktop'] as InstallPlatform[]).map(platform => <button key={platform} className={installPlatform === platform ? 'active' : ''} onClick={() => setInstallPlatform(platform)} role="tab" aria-selected={installPlatform === platform}>{installGuide.tabs[platform]}</button>)}</div><ol className="install-steps">{installGuide.steps[installPlatform].map((step, index) => <li key={step}><span className="install-step-number">{index + 1}</span><span>{step}</span><span className="install-step-icon">{index === 0 ? installPlatform === 'ios' ? <UploadSimple size={21} weight="bold"/> : <Globe size={20}/> : index === 1 ? <Plus size={21}/> : <Check size={20} weight="bold"/>}</span></li>)}</ol><p className="install-tip">{installGuide.tip}</p></section></div>}
   </main>
 }
 
