@@ -1,7 +1,10 @@
+'use client'
+
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { useRegisterSW } from 'virtual:pwa-register/react'
+import Image from 'next/image'
+import Link from 'next/link'
 import { TOTP } from 'otpauth'
-import { ArrowRight, ArrowsClockwise, Check, Copy, CrosshairSimple, DownloadSimple, Globe, Key, ListChecks, LockKey, MapPin, Moon, Network, PencilSimple, Plus, ShieldCheck, Sun, TelegramLogo, Trash, UploadSimple, WarningCircle, WifiHigh, X } from '@phosphor-icons/react'
+import { ArrowRight, ArrowsClockwise, BookOpenText, Check, Copy, CrosshairSimple, DownloadSimple, EnvelopeSimple, Globe, Key, ListChecks, LockKey, MapPin, Moon, Network, PencilSimple, Plus, ShieldCheck, Sun, TelegramLogo, Trash, UploadSimple, WarningCircle, WifiHigh, X, YoutubeLogo } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Input } from '@/components/ui/input'
@@ -155,6 +158,7 @@ function loadRememberKeys() {
 }
 
 function detectInstallPlatform(): InstallPlatform {
+  if (typeof navigator === 'undefined') return 'desktop'
   const userAgent = navigator.userAgent
   if (/iPad|iPhone|iPod/i.test(userAgent)) return 'ios'
   if (/Android/i.test(userAgent)) return 'android'
@@ -188,28 +192,46 @@ function App() {
   const [domainError, setDomainError] = useState('')
   const [whoisResult, setWhoisResult] = useState<WhoisResult | null>(null)
   const [hostedResult, setHostedResult] = useState<HostedResult | null>(null)
+  const [needRefresh, setNeedRefresh] = useState(false)
+  const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null)
   const t = text[language]
   const installGuide = installCopy[language]
-  const {
-    needRefresh: [needRefresh],
-    updateServiceWorker,
-  } = useRegisterSW({
-    onRegisteredSW(_swUrl, registration) {
-      if (!registration) return
+  const updateServiceWorker = () => waitingWorker?.postMessage({ type: 'SKIP_WAITING' })
+
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return
+    let interval: number | undefined
+    const register = async () => {
+      const registration = await navigator.serviceWorker.register('/sw.js')
       const checkForUpdate = () => {
         if (!document.hidden) void registration.update()
       }
+      const inspectWaiting = () => {
+        if (registration.waiting) {
+          setWaitingWorker(registration.waiting)
+          setNeedRefresh(true)
+        }
+      }
       checkForUpdate()
-      window.setInterval(checkForUpdate, 5 * 60 * 1000)
+      inspectWaiting()
+      registration.addEventListener('updatefound', () => registration.installing?.addEventListener('statechange', inspectWaiting))
+      interval = window.setInterval(checkForUpdate, 5 * 60 * 1000)
       window.addEventListener('focus', checkForUpdate)
       document.addEventListener('visibilitychange', checkForUpdate)
-    },
-  })
+      return () => {
+        window.removeEventListener('focus', checkForUpdate)
+        document.removeEventListener('visibilitychange', checkForUpdate)
+      }
+    }
+    let cleanup: (() => void) | undefined
+    void register().then(fn => { cleanup = fn })
+    return () => {
+      cleanup?.()
+      if (interval) clearInterval(interval)
+    }
+  }, [])
 
   useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 350); return () => clearInterval(timer) }, [])
-  useEffect(() => {
-    if (needRefresh) void updateServiceWorker(true)
-  }, [needRefresh, updateServiceWorker])
   useEffect(() => {
     let refreshing = false
     const reloadWhenClaimed = () => {
@@ -276,7 +298,7 @@ function App() {
     setIpv6Info(null)
     try {
       const [ipv4, ipv6] = await Promise.allSettled([
-        lookupIp('IPv4', import.meta.env.DEV ? 'https://api.ipify.org?format=json' : ''),
+        lookupIp('IPv4', process.env.NODE_ENV === 'development' ? 'https://api.ipify.org?format=json' : ''),
         lookupIp('IPv6', 'https://api6.ipify.org?format=json'),
       ])
       if (ipv4.status !== 'fulfilled') throw ipv4.reason instanceof Error ? ipv4.reason : new Error('IPv4 lookup failed')
@@ -428,12 +450,13 @@ function App() {
 
   return <main className={`board-page ${theme}`}>
     <header className="topbar">
-      <div className="brand"><span className="brand-mark"><ShieldCheck size={20} weight="fill" /></span>Kira Tech 2FA</div>
+      <div className="brand"><Image className="brand-logo" src="/kira-logo.png" alt="Kira Tech" width={29} height={29} priority />Kira Tech 2FA</div>
       <div className="header-actions">
         <nav className="tool-switch" aria-label="Tools">
           <button className={view === 'totp' ? 'active' : ''} onClick={() => setView('totp')}><ShieldCheck size={15} weight="fill" />{t.totpTab}</button>
           <button className={view === 'ip' ? 'active' : ''} onClick={() => setView('ip')}><Globe size={15} />{t.ipTab}</button>
           <button className={view === 'domain' ? 'active' : ''} onClick={() => setView('domain')}><Network size={15} />{t.domainTab}</button>
+          <Link className="knowledge-nav-link" href="/huong-dan"><BookOpenText size={15} weight="bold" />{language === 'vi' ? 'Kiến thức' : language === 'de' ? 'Wissen' : 'Guides'}</Link>
         </nav>
         <div className="language-switch" aria-label="Language"><Globe size={15}/>{(['vi', 'en', 'de'] as Language[]).map(item => <button key={item} className={language === item ? 'active' : ''} onClick={() => setLanguage(item)}>{item.toUpperCase()}</button>)}</div>
         <label className="mobile-language"><Globe size={17}/><select value={language} onChange={event => setLanguage(event.target.value as Language)} aria-label="Language"><option value="vi">VI · Tiếng Việt</option><option value="en">EN · English</option><option value="de">DE · Deutsch</option></select></label>
@@ -505,6 +528,8 @@ function App() {
     <footer className="site-footer">
       <span>Thông tin liên hệ</span>
       <a href="https://t.me/kiratech1011" target="_blank" rel="noreferrer"><TelegramLogo size={17} weight="fill"/> @kiratech1011</a>
+      <a href="https://www.youtube.com/@KiraTechTKpremium" target="_blank" rel="noreferrer"><YoutubeLogo size={17} weight="fill"/> YouTube</a>
+      <a href="mailto:kira10111907@gmail.com"><EnvelopeSimple size={17} weight="bold"/> kira10111907@gmail.com</a>
     </footer>
     <AlertDialog open={Boolean(accountToRemove)} onOpenChange={open => { if (!open) setAccountToRemove(null) }}>
       <AlertDialogContent className="remove-key-dialog">
@@ -519,7 +544,7 @@ function App() {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-    {needRefresh && <div className="update-notification" role="status"><span><DownloadSimple size={18} weight="bold"/></span><strong>{t.updateAvailable}</strong><Button className="update-action" onClick={() => void updateServiceWorker(true)}>{t.updateNow}</Button></div>}
+    {needRefresh && <div className="update-notification" role="status"><span><DownloadSimple size={18} weight="bold"/></span><strong>{t.updateAvailable}</strong><Button className="update-action" onClick={updateServiceWorker}>{t.updateNow}</Button></div>}
     <Toaster timeout={2200}/>
     {installHelpOpen && <div className="install-dialog-backdrop" role="presentation" onClick={() => setInstallHelpOpen(false)}><section className="install-dialog" role="dialog" aria-modal="true" aria-labelledby="install-dialog-title" onClick={event => event.stopPropagation()}><div className="install-dialog-handle"/><Button variant="ghost" size="icon-sm" className="install-dialog-close" onClick={() => setInstallHelpOpen(false)} aria-label={t.installClose}><X size={18}/></Button><span className="install-dialog-icon"><DownloadSimple size={22} weight="bold"/></span><span className="install-dialog-label">{installGuide.label}</span><h2 id="install-dialog-title">{t.installTitle}</h2><div className="install-tabs" role="tablist">{(['ios', 'android', 'desktop'] as InstallPlatform[]).map(platform => <button key={platform} className={installPlatform === platform ? 'active' : ''} onClick={() => setInstallPlatform(platform)} role="tab" aria-selected={installPlatform === platform}>{installGuide.tabs[platform]}</button>)}</div><ol className="install-steps">{installGuide.steps[installPlatform].map((step, index) => <li key={step}><span className="install-step-number">{index + 1}</span><span>{step}</span><span className="install-step-icon">{index === 0 ? installPlatform === 'ios' ? <UploadSimple size={21} weight="bold"/> : <Globe size={20}/> : index === 1 ? <Plus size={21}/> : <Check size={20} weight="bold"/>}</span></li>)}</ol><p className="install-tip">{installGuide.tip}</p></section></div>}
   </main>

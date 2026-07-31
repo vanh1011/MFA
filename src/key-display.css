@@ -97,12 +97,14 @@
 .board-page.light .code-button span { color: #315a42 !important; }
 .board-page.light .clear-button { color: #254433 !important; }
 .board-page.light .brand-mark { background: #21834d !important; color: #f4fff7 !important; }
+.brand-logo { width: 29px; height: 29px; flex: none; border-radius: 9px; object-fit: cover; box-shadow: 0 0 0 1px color-mix(in srgb, var(--line) 70%, transparent); }
 .board-page.light .empty-mark { background: #e1f4e7 !important; border-color: #9fcead !important; color: #176f3d !important; }
 
 .site-footer {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 10px;
   padding: 0 20px 30px;
   color: var(--muted);
@@ -120,6 +122,11 @@
 
 .site-footer a:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 760px) {
+  .site-footer { gap: 9px 14px; padding-inline: 16px; text-align: center; }
+  .site-footer > span { width: 100%; }
 }
 
 button[data-copy-button].code-copy-button {
@@ -198,9 +205,11 @@ button[data-copy-button].code-copy-button[data-copied] {
   background: color-mix(in srgb, var(--surface) 68%, transparent);
 }
 
-.tool-switch button {
+.tool-switch button,
+.tool-switch .knowledge-nav-link {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
   border: 0;
   border-radius: 5px;
@@ -209,9 +218,14 @@ button[data-copy-button].code-copy-button[data-copied] {
   font: 700 11px/1 Geist, sans-serif;
   padding: 6px 8px;
   cursor: pointer;
+  text-decoration: none;
+  transition: background .22s cubic-bezier(.16,1,.3,1), color .22s cubic-bezier(.16,1,.3,1), transform .22s cubic-bezier(.16,1,.3,1);
 }
 
 .tool-switch button.active { background: var(--accent-soft, #234a34); color: var(--accent); }
+.tool-switch .knowledge-nav-link { border-left: 1px solid var(--line); border-radius: 0 5px 5px 0; margin-left: 2px; padding-left: 10px; }
+.tool-switch .knowledge-nav-link:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
+.tool-switch .knowledge-nav-link:active { transform: translateY(1px); }
 .ip-page { gap: 20px; }
 .domain-page { gap: 20px; }
 .domain-description { margin: 9px 0 0; color: var(--muted); font-size: 13px; }
@@ -908,7 +922,8 @@ button[data-copy-button].code-copy-button[data-copied] {
     letter-spacing: -.55px;
   }
 
-  .brand-mark { width: 28px; height: 28px; }
+  .brand-mark,
+  .brand-logo { width: 28px; height: 28px; }
 
   .header-actions {
     display: grid;
@@ -920,7 +935,7 @@ button[data-copy-button].code-copy-button[data-copied] {
   .tool-switch {
     grid-column: 1 / -1;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     width: 100%;
     gap: 3px;
     padding: 3px;
@@ -928,7 +943,8 @@ button[data-copy-button].code-copy-button[data-copied] {
     background: color-mix(in srgb, var(--surface) 86%, transparent);
   }
 
-  .tool-switch button {
+  .tool-switch button,
+  .tool-switch .knowledge-nav-link {
     min-width: 0;
     min-height: 42px;
     justify-content: center;
@@ -939,7 +955,9 @@ button[data-copy-button].code-copy-button[data-copied] {
     white-space: nowrap;
   }
 
-  .tool-switch button svg { display: block; flex: none; }
+  .tool-switch button svg,
+  .tool-switch .knowledge-nav-link svg { display: block; flex: none; }
+  .tool-switch .knowledge-nav-link { border-left: 0; border-radius: 10px; margin-left: 0; padding-left: 5px; }
   .language-switch { display: none; }
 
   .mobile-language {
@@ -984,8 +1002,10 @@ button[data-copy-button].code-copy-button[data-copied] {
 }
 
 @media (max-width: 390px) {
-  .tool-switch button { gap: 0; font-size: 10px; }
-  .tool-switch button svg { display: none; }
+  .tool-switch button,
+  .tool-switch .knowledge-nav-link { gap: 0; font-size: 10px; }
+  .tool-switch button svg,
+  .tool-switch .knowledge-nav-link svg { display: none; }
 }
 
 @media (max-width: 760px) {
@@ -1063,8 +1083,10 @@ button[data-copy-button].code-copy-button[data-copied] {
 /* Header colour and grid are explicit to avoid dark-token leakage on mobile. */
 .board-page.dark .topbar { border-color: #2c3f33; }
 .board-page.dark .tool-switch { border-color: #3b5545; background: #142019; }
-.board-page.dark .tool-switch button { color: #cbd9d0; }
-.board-page.dark .tool-switch button svg { color: #9cc8aa; }
+.board-page.dark .tool-switch button,
+.board-page.dark .tool-switch .knowledge-nav-link { color: #cbd9d0; }
+.board-page.dark .tool-switch button svg,
+.board-page.dark .tool-switch .knowledge-nav-link svg { color: #9cc8aa; }
 .board-page.dark .tool-switch button.active { background: #246c43; color: #f3fbf5; }
 .board-page.dark .tool-switch button.active svg { color: #b7efc9; }
 .board-page.dark .theme-toggle { color: #dce8e0 !important; }

@@ -1,0 +1,4 @@
+# Thay dòng này bằng bản ghi chính thức do Google AdSense cung cấp sau khi tài khoản được duyệt.
+# Không thêm publisher ID giả. Ví dụ định dạng:
+# google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
+
