@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { TOTP } from 'otpauth'
-import { ArrowRight, ArrowsClockwise, Check, Copy, CrosshairSimple, DownloadSimple, Globe, Key, MapPin, Moon, Network, Plus, ShieldCheck, Sun, Trash, UploadSimple, WarningCircle, WifiHigh, X } from '@phosphor-icons/react'
+import { ArrowRight, ArrowsClockwise, Check, Copy, CrosshairSimple, DownloadSimple, Globe, Key, MapPin, Moon, Network, PencilSimple, Plus, ShieldCheck, Sun, TelegramLogo, Trash, UploadSimple, WarningCircle, WifiHigh, X } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { CopyButton } from './components/lazy-ui/copy-button'
 import './App.css'
 import './key-display.css'
 
@@ -11,7 +13,7 @@ type Language = 'vi' | 'en' | 'de'
 type Theme = 'dark' | 'light'
 type View = 'totp' | 'ip' | 'domain'
 type InstallPlatform = 'ios' | 'android' | 'desktop'
-type TotpAccount = { id: string; name: string; secret: string; period: number; digits: number; algorithm: string }
+type TotpAccount = { id: string; name: string; email: string; secret: string; period: number; digits: number; algorithm: string }
 type IpInfo = { version: 'IPv4' | 'IPv6'; ip: string; isp: string; org: string; asn: string; domain: string; city: string; region: string; country: string; timezone: string; latitude: number | null; longitude: number | null; connectionType: string; isVpn: boolean | null }
 type DeviceLocation = { latitude: number; longitude: number; accuracy: number }
 type WhoisResult = { domain: string; status: string; created: string; updated: string; expires: string; age: number | string; registrar: string; registrarUrl: string; nameservers: string[] }
@@ -20,21 +22,25 @@ type InstallPromptEvent = Event & { prompt: () => Promise<void>; userChoice: Pro
 
 const text = {
   vi: {
-    totpTab: 'Mã 2FA', ipTab: 'Kiểm tra IP', session: 'Không lưu khóa', clear: 'Xóa tất cả', install: 'Cài app', installToast: 'Đã sẵn sàng cài ứng dụng', installTitle: 'Cài Kira Tech 2FA', installHint: 'Trên iPhone/iPad: mở trang bằng Safari, bấm Chia sẻ rồi chọn “Thêm vào Màn hình chính”. Trên Chrome/Edge: bấm “Cài app” để tiếp tục.', installClose: 'Đóng', title: 'Lấy mã 2FA', section: 'NHẬP KHÓA', addTitle: 'Dán khóa 2FA vào đây', hint: 'Mỗi dòng là một mã. Có thể dán nhiều khóa.', add: 'Lấy mã 2FA', addDescription: 'Mã tạo ngay trên thiết bị của bạn', emptyTitle: 'Chưa có mã nào', emptyText: 'Dán khóa 2FA ở trên, rồi bấm “Lấy mã 2FA”.', live: 'MÃ ĐANG HIỂN THỊ', expires: 'Đổi mã sau', copied: 'Đã copy', copy: 'Copy mã', remove: 'Xóa mã', privacy: 'Khóa chỉ được xử lý trên thiết bị của bạn.', keyRequired: 'Hãy dán khóa 2FA trước.', invalid: 'Khóa chưa đúng. Hãy kiểm tra và thử lại.', duplicateKeys: 'Khóa này đã có trên bảng, không thêm lại.', codeCopiedToast: 'Đã sao chép mã 2FA', ipCopiedToast: 'Đã sao chép địa chỉ IP', codesAddedToast: 'Đã tạo mã 2FA', placeholder: 'Dán khóa 2FA vào đây\nBạn có thể dán nhiều khóa, mỗi khóa một dòng.', key: 'Khóa',
+    totpTab: 'Mã 2FA', ipTab: 'Kiểm tra IP', session: 'Lưu khóa trên trình duyệt', sessionOff: 'Không lưu khóa', clear: 'Xóa tất cả', install: 'Cài app', installToast: 'Đã sẵn sàng cài ứng dụng', installTitle: 'Cài Kira Tech 2FA', installHint: 'Trên iPhone/iPad: mở trang bằng Safari, bấm Chia sẻ rồi chọn “Thêm vào Màn hình chính”. Trên Chrome/Edge: bấm “Cài app” để tiếp tục.', installClose: 'Đóng', title: 'Lấy mã 2FA', section: 'NHẬP KHÓA', addTitle: 'Dán email và khóa 2FA vào đây', hint: 'Mỗi dòng là một mã. Có thể dán dạng email | khóa, email khóa, hoặc chỉ khóa.', remember: 'Lưu key trên trình duyệt này', rememberHint: 'Chỉ bật trên thiết bị cá nhân.', add: 'Lấy mã 2FA', addDescription: 'Mã tạo ngay trên thiết bị của bạn', emptyTitle: 'Chưa có mã nào', emptyText: 'Dán email và khóa 2FA ở trên, rồi bấm “Lấy mã 2FA”.', live: 'MÃ ĐANG HIỂN THỊ', expires: 'Đổi mã sau', copied: 'Đã copy', copy: 'Copy mã', remove: 'Xóa mã', privacy: 'Khóa được xử lý trên thiết bị của bạn. Nếu bật lưu, key sẽ được lưu trong trình duyệt này.', keyRequired: 'Hãy dán khóa 2FA trước.', invalid: 'Khóa chưa đúng. Hãy kiểm tra và thử lại.', duplicateKeys: 'Khóa này đã có trên bảng, không thêm lại.', codeCopiedToast: 'Đã sao chép mã 2FA', ipCopiedToast: 'Đã sao chép địa chỉ IP', codesAddedToast: 'Đã tạo mã 2FA', placeholder: 'email@example.com | JBSWY3DPEHPK3PXP\nBạn cũng có thể dán nhiều dòng, mỗi dòng một email và khóa.', key: 'Khóa', email: 'Email', emailPlaceholder: 'Nhập email để dễ nhớ key này', addEmail: 'Thêm email', editEmail: 'Sửa',
     ipTitle: 'Kiểm tra IP của bạn', ipDescription: 'Xem IPv4, IPv6, vị trí và thông tin kết nối hiện tại.', yourIp: 'Địa chỉ IP của bạn', copyIp: 'Copy IP', refresh: 'Làm mới', deviceLocation: 'Lấy vị trí thiết bị', deviceLocationTitle: 'Vị trí thiết bị', deviceLocationHint: 'Chính xác hơn vị trí theo IP. Trình duyệt sẽ hỏi quyền truy cập.', deviceLocationError: 'Không thể lấy vị trí thiết bị. Hãy cho phép quyền Vị trí và thử lại.', accuracy: 'Độ chính xác', meters: 'm', network: 'Thông tin mạng', isp: 'Nhà mạng / ISP', organization: 'Tổ chức', asn: 'Mã ASN', domain: 'Tên miền / PTR', connection: 'Loại kết nối', location: 'Vị trí ước tính theo IP', coordinates: 'Tọa độ', openMap: 'Mở bản đồ', timezone: 'Múi giờ', vpn: 'Phát hiện VPN', vpnYes: 'Có thể đang dùng VPN', vpnNo: 'Không phát hiện VPN', vpnUnknown: 'Chưa xác định', ipv6Unavailable: 'Không phát hiện kết nối IPv6', ipLoading: 'Đang kiểm tra IPv4 và IPv6…', ipError: 'Không thể lấy thông tin IP. Hãy kiểm tra mạng rồi thử lại.', ipPrivacy: 'IP được gửi trực tiếp đến dịch vụ tra cứu IP để lấy thông tin nhà mạng và vị trí. Thành phố theo IP chỉ mang tính ước lượng.', unavailable: 'Chưa có dữ liệu',
     domainTab: 'Tên miền', domainTitle: 'Tra cứu tên miền', domainDescription: 'Xem thông tin WHOIS hoặc các domain được host trên một IP.', whoisTab: 'WHOIS domain', hostedTab: 'Hosted domains', domainPlaceholder: 'Nhập domain, ví dụ kira.tech', ipPlaceholder: 'Nhập IPv4 hoặc IPv6', lookup: 'Tra cứu', lookupError: 'Không tìm thấy dữ liệu. Kiểm tra lại giá trị rồi thử lại.', status: 'Trạng thái', created: 'Ngày đăng ký', updated: 'Cập nhật', domainExpires: 'Hết hạn', age: 'Tuổi domain', registrar: 'Nhà đăng ký', nameservers: 'Nameservers', hostedCount: 'Số domain trên IP', noDomains: 'Không tìm thấy domain nào.',
   },
   en: {
-    totpTab: '2FA codes', ipTab: 'Check IP', session: 'Keys are not saved', clear: 'Clear all', install: 'Install app', installToast: 'Ready to install the app', installTitle: 'Install Kira Tech 2FA', installHint: 'On iPhone/iPad: open this site in Safari, tap Share, then “Add to Home Screen”. On Chrome/Edge: choose “Install app” to continue.', installClose: 'Close', title: 'Get 2FA codes', section: 'PASTE KEYS', addTitle: 'Paste your 2FA key here', hint: 'One line equals one code. You can paste multiple keys.', add: 'Get 2FA codes', addDescription: 'Generated on this device', emptyTitle: 'No codes yet', emptyText: 'Paste your 2FA key above, then choose “Get 2FA codes”.', live: 'CURRENT CODES', expires: 'Changes in', copied: 'Copied', copy: 'Copy code', remove: 'Remove code', privacy: 'Keys are processed only on your device.', keyRequired: 'Paste a 2FA key first.', invalid: 'This key does not look right. Check it and try again.', duplicateKeys: 'This key is already on the board.', codeCopiedToast: '2FA code copied', ipCopiedToast: 'IP address copied', codesAddedToast: '2FA codes generated', placeholder: 'Paste your 2FA key here\nYou can paste multiple keys, one per line.', key: 'Key',
+    totpTab: '2FA codes', ipTab: 'Check IP', session: 'Saved in this browser', sessionOff: 'Keys are not saved', clear: 'Clear all', install: 'Install app', installToast: 'Ready to install the app', installTitle: 'Install Kira Tech 2FA', installHint: 'On iPhone/iPad: open this site in Safari, tap Share, then “Add to Home Screen”. On Chrome/Edge: choose “Install app” to continue.', installClose: 'Close', title: 'Get 2FA codes', section: 'PASTE KEYS', addTitle: 'Paste email and 2FA key here', hint: 'One line equals one code. Use email | key, email key, or just key.', remember: 'Save keys in this browser', rememberHint: 'Only enable on a personal device.', add: 'Get 2FA codes', addDescription: 'Generated on this device', emptyTitle: 'No codes yet', emptyText: 'Paste your email and 2FA key above, then choose “Get 2FA codes”.', live: 'CURRENT CODES', expires: 'Changes in', copied: 'Copied', copy: 'Copy code', remove: 'Remove code', privacy: 'Keys are processed on your device. If saving is enabled, keys are stored in this browser.', keyRequired: 'Paste a 2FA key first.', invalid: 'This key does not look right. Check it and try again.', duplicateKeys: 'This key is already on the board.', codeCopiedToast: '2FA code copied', ipCopiedToast: 'IP address copied', codesAddedToast: '2FA codes generated', placeholder: 'email@example.com | JBSWY3DPEHPK3PXP\nYou can paste multiple lines, one email and key per line.', key: 'Key', email: 'Email', emailPlaceholder: 'Add an email to identify this key', addEmail: 'Add email', editEmail: 'Edit',
     ipTitle: 'Check your IP', ipDescription: 'View IPv4, IPv6, location and current connection details.', yourIp: 'Your IP address', copyIp: 'Copy IP', refresh: 'Refresh', deviceLocation: 'Use device location', deviceLocationTitle: 'Device location', deviceLocationHint: 'More accurate than IP location. Your browser will ask for permission.', deviceLocationError: 'We could not retrieve your device location. Allow location access and try again.', accuracy: 'Accuracy', meters: 'm', network: 'Network details', isp: 'Network / ISP', organization: 'Organization', asn: 'ASN', domain: 'Domain / PTR', connection: 'Connection type', location: 'Approximate IP location', coordinates: 'Coordinates', openMap: 'Open map', timezone: 'Time zone', vpn: 'VPN detection', vpnYes: 'VPN may be in use', vpnNo: 'No VPN detected', vpnUnknown: 'Unknown', ipv6Unavailable: 'No IPv6 connection detected', ipLoading: 'Checking IPv4 and IPv6…', ipError: 'We could not retrieve your IP information. Check your connection and try again.', ipPrivacy: 'Your IP is sent directly to the IP lookup provider to retrieve network and location details. City-level IP location is only an estimate.', unavailable: 'Unavailable',
     domainTab: 'Domains', domainTitle: 'Domain lookup', domainDescription: 'View WHOIS data or domains hosted on an IP address.', whoisTab: 'Domain WHOIS', hostedTab: 'Hosted domains', domainPlaceholder: 'Enter a domain, e.g. kira.tech', ipPlaceholder: 'Enter an IPv4 or IPv6 address', lookup: 'Look up', lookupError: 'No data found. Check the value and try again.', status: 'Status', created: 'Created', updated: 'Updated', domainExpires: 'Expires', age: 'Domain age', registrar: 'Registrar', nameservers: 'Nameservers', hostedCount: 'Domains on this IP', noDomains: 'No domains found.',
   },
   de: {
-    totpTab: '2FA-Codes', ipTab: 'IP prüfen', session: 'Schlüssel werden nicht gespeichert', clear: 'Alles löschen', install: 'App installieren', installToast: 'App kann installiert werden', installTitle: 'Kira Tech 2FA installieren', installHint: 'Auf iPhone/iPad: Seite in Safari öffnen, Teilen wählen und dann „Zum Home-Bildschirm“. Auf Chrome/Edge: „App installieren“ auswählen.', installClose: 'Schließen', title: '2FA-Codes abrufen', section: 'SCHLÜSSEL EINFÜGEN', addTitle: '2FA-Schlüssel hier einfügen', hint: 'Eine Zeile entspricht einem Code. Mehrere Schlüssel sind möglich.', add: '2FA-Codes abrufen', addDescription: 'Wird auf diesem Gerät erstellt', emptyTitle: 'Noch keine Codes', emptyText: 'Füge oben deinen 2FA-Schlüssel ein und wähle „2FA-Codes abrufen“.', live: 'AKTUELLE CODES', expires: 'Ändert sich in', copied: 'Kopiert', copy: 'Code kopieren', remove: 'Code entfernen', privacy: 'Schlüssel werden nur auf deinem Gerät verarbeitet.', keyRequired: 'Füge zuerst einen 2FA-Schlüssel ein.', invalid: 'Dieser Schlüssel sieht nicht richtig aus. Bitte prüfe ihn.', duplicateKeys: 'Dieser Schlüssel ist bereits vorhanden.', codeCopiedToast: '2FA-Code kopiert', ipCopiedToast: 'IP-Adresse kopiert', codesAddedToast: '2FA-Codes erstellt', placeholder: '2FA-Schlüssel hier einfügen\nMehrere Schlüssel sind möglich, einer pro Zeile.', key: 'Schlüssel',
+    totpTab: '2FA-Codes', ipTab: 'IP prüfen', session: 'In diesem Browser gespeichert', sessionOff: 'Schlüssel werden nicht gespeichert', clear: 'Alles löschen', install: 'App installieren', installToast: 'App kann installiert werden', installTitle: 'Kira Tech 2FA installieren', installHint: 'Auf iPhone/iPad: Seite in Safari öffnen, Teilen wählen und dann „Zum Home-Bildschirm“. Auf Chrome/Edge: „App installieren“ auswählen.', installClose: 'Schließen', title: '2FA-Codes abrufen', section: 'SCHLÜSSEL EINFÜGEN', addTitle: 'E-Mail und 2FA-Schlüssel einfügen', hint: 'Eine Zeile entspricht einem Code. Nutze E-Mail | Schlüssel, E-Mail Schlüssel oder nur Schlüssel.', remember: 'Schlüssel in diesem Browser speichern', rememberHint: 'Nur auf einem persönlichen Gerät aktivieren.', add: '2FA-Codes abrufen', addDescription: 'Wird auf diesem Gerät erstellt', emptyTitle: 'Noch keine Codes', emptyText: 'Füge oben E-Mail und 2FA-Schlüssel ein und wähle „2FA-Codes abrufen“.', live: 'AKTUELLE CODES', expires: 'Ändert sich in', copied: 'Kopiert', copy: 'Code kopieren', remove: 'Code entfernen', privacy: 'Schlüssel werden auf deinem Gerät verarbeitet. Bei aktivierter Speicherung liegen sie in diesem Browser.', keyRequired: 'Füge zuerst einen 2FA-Schlüssel ein.', invalid: 'Dieser Schlüssel sieht nicht richtig aus. Bitte prüfe ihn.', duplicateKeys: 'Dieser Schlüssel ist bereits vorhanden.', codeCopiedToast: '2FA-Code kopiert', ipCopiedToast: 'IP-Adresse kopiert', codesAddedToast: '2FA-Codes erstellt', placeholder: 'email@example.com | JBSWY3DPEHPK3PXP\nMehrere Zeilen sind möglich, eine E-Mail und ein Schlüssel pro Zeile.', key: 'Schlüssel', email: 'E-Mail', emailPlaceholder: 'E-Mail zum Wiedererkennen dieses Schlüssels', addEmail: 'E-Mail hinzufügen', editEmail: 'Bearbeiten',
     ipTitle: 'Deine IP prüfen', ipDescription: 'Zeige IPv4, IPv6, Standort und Verbindungsdetails.', yourIp: 'Deine IP-Adresse', copyIp: 'IP kopieren', refresh: 'Aktualisieren', deviceLocation: 'Gerätestandort verwenden', deviceLocationTitle: 'Gerätestandort', deviceLocationHint: 'Genauer als der IP-Standort. Dein Browser fragt nach Berechtigung.', deviceLocationError: 'Der Gerätestandort konnte nicht abgerufen werden. Erlaube Standortzugriff und versuche es erneut.', accuracy: 'Genauigkeit', meters: 'm', network: 'Netzwerkdetails', isp: 'Anbieter / ISP', organization: 'Organisation', asn: 'ASN', domain: 'Domain / PTR', connection: 'Verbindungstyp', location: 'Ungefährer IP-Standort', coordinates: 'Koordinaten', openMap: 'Karte öffnen', timezone: 'Zeitzone', vpn: 'VPN-Erkennung', vpnYes: 'VPN wird möglicherweise verwendet', vpnNo: 'Kein VPN erkannt', vpnUnknown: 'Unbekannt', ipv6Unavailable: 'Keine IPv6-Verbindung erkannt', ipLoading: 'IPv4 und IPv6 werden geprüft…', ipError: 'IP-Informationen konnten nicht geladen werden. Prüfe die Verbindung und versuche es erneut.', ipPrivacy: 'Deine IP wird direkt an den IP-Lookup-Anbieter gesendet, um Netzwerk- und Standortdaten abzurufen. Der IP-Stadtstandort ist nur eine Schätzung.', unavailable: 'Nicht verfügbar',
     domainTab: 'Domains', domainTitle: 'Domain-Suche', domainDescription: 'WHOIS-Daten oder auf einer IP gehostete Domains anzeigen.', whoisTab: 'Domain-WHOIS', hostedTab: 'Gehostete Domains', domainPlaceholder: 'Domain eingeben, z. B. kira.tech', ipPlaceholder: 'IPv4- oder IPv6-Adresse eingeben', lookup: 'Suchen', lookupError: 'Keine Daten gefunden. Prüfe den Wert und versuche es erneut.', status: 'Status', created: 'Registriert', updated: 'Aktualisiert', domainExpires: 'Läuft ab', age: 'Domain-Alter', registrar: 'Registrar', nameservers: 'Nameserver', hostedCount: 'Domains auf dieser IP', noDomains: 'Keine Domains gefunden.',
   },
 } as const
+
+const TOTP_STORAGE_KEY = 'kira-tech-totp-accounts-v1'
+const TOTP_REMEMBER_KEY = 'kira-tech-totp-remember-v1'
+const EMAIL_PATTERN = /[^\s|,;]+@[^\s|,;]+\.[^\s|,;]+/
 
 const installCopy = {
   vi: {
@@ -72,6 +78,8 @@ const installCopy = {
 function parseLine(line: string, fallbackName: string): TotpAccount {
   const [label, ...parts] = line.split('|')
   const raw = parts.length ? parts.join('|').trim() : line.trim()
+  const emailMatch = (parts.length ? label : line).match(EMAIL_PATTERN)
+  const email = emailMatch?.[0] ?? ''
   let name = parts.length ? label.trim() : ''
   let secret = raw.replace(/\s/g, ''), period = 30, digits = 6, algorithm = 'SHA1'
   if (raw.startsWith('otpauth://')) {
@@ -84,8 +92,10 @@ function parseLine(line: string, fallbackName: string): TotpAccount {
     digits = Number(uri.searchParams.get('digits') ?? 6)
     algorithm = uri.searchParams.get('algorithm') ?? 'SHA1'
   }
+  if (!parts.length && email) secret = line.replace(email, '').replace(/^[\s|,;:-]+|[\s|,;:-]+$/g, '').replace(/\s/g, '')
   if (!/^[A-Z2-7]+=*$/i.test(secret)) throw new Error()
-  return { id: createAccountId(), name: name || `${fallbackName}: ${secret.toUpperCase()}`, secret, period, digits, algorithm }
+  name = email || name
+  return { id: createAccountId(), name: name || `${fallbackName}: ${secret.toUpperCase()}`, email, secret, period, digits, algorithm }
 }
 
 function createAccountId() {
@@ -111,6 +121,36 @@ function uniqueAccounts(accounts: TotpAccount[]) {
   })
 }
 
+function loadStoredAccounts(): TotpAccount[] {
+  try {
+    const saved = window.localStorage.getItem(TOTP_STORAGE_KEY)
+    if (!saved) return []
+    const parsed = JSON.parse(saved)
+    if (!Array.isArray(parsed)) return []
+    return uniqueAccounts(parsed.map(item => ({
+      id: typeof item.id === 'string' ? item.id : createAccountId(),
+      name: typeof item.name === 'string' ? item.name : '',
+      email: typeof item.email === 'string' ? item.email : '',
+      secret: typeof item.secret === 'string' ? item.secret : '',
+      period: typeof item.period === 'number' ? item.period : 30,
+      digits: typeof item.digits === 'number' ? item.digits : 6,
+      algorithm: typeof item.algorithm === 'string' ? item.algorithm : 'SHA1',
+    })).filter(account => /^[A-Z2-7]+=*$/i.test(account.secret)))
+  } catch {
+    return []
+  }
+}
+
+function loadRememberKeys() {
+  try {
+    const savedPreference = window.localStorage.getItem(TOTP_REMEMBER_KEY)
+    if (savedPreference) return savedPreference === 'true'
+    return Boolean(window.localStorage.getItem(TOTP_STORAGE_KEY))
+  } catch {
+    return false
+  }
+}
+
 function detectInstallPlatform(): InstallPlatform {
   const userAgent = navigator.userAgent
   if (/iPad|iPhone|iPod/i.test(userAgent)) return 'ios'
@@ -123,7 +163,8 @@ function App() {
   const [theme, setTheme] = useState<Theme>('light')
   const [view, setView] = useState<View>('totp')
   const [input, setInput] = useState('')
-  const [accounts, setAccounts] = useState<TotpAccount[]>([])
+  const [accounts, setAccounts] = useState<TotpAccount[]>(loadStoredAccounts)
+  const [rememberKeys, setRememberKeys] = useState(loadRememberKeys)
   const [error, setError] = useState('')
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
@@ -148,6 +189,11 @@ function App() {
   const installGuide = installCopy[language]
 
   useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 350); return () => clearInterval(timer) }, [])
+  useEffect(() => {
+    window.localStorage.setItem(TOTP_REMEMBER_KEY, String(rememberKeys))
+    if (rememberKeys) window.localStorage.setItem(TOTP_STORAGE_KEY, JSON.stringify(accounts))
+    else window.localStorage.removeItem(TOTP_STORAGE_KEY)
+  }, [accounts, rememberKeys])
   useEffect(() => { if (view === 'ip' && !ipv4Info && !ipLoading) void loadIp() }, [view])
   useEffect(() => {
     const onBeforeInstall = (event: Event) => {
@@ -273,8 +319,17 @@ function App() {
     setInstallPrompt(null)
   }
 
-  function copyCode(account: TotpAccount, code: string) {
-    void copyText(code, () => { setCopiedId(account.id); showToast(t.codeCopiedToast); window.setTimeout(() => setCopiedId(null), 1300) })
+  function handleCodeCopied(account: TotpAccount, copied: boolean) {
+    if (!copied) {
+      setCopiedId(current => current === account.id ? null : current)
+      return
+    }
+    setCopiedId(account.id)
+    showToast(t.codeCopiedToast)
+  }
+
+  function updateAccountEmail(accountId: string, email: string) {
+    setAccounts(current => current.map(account => account.id === accountId ? { ...account, email, name: email || account.name } : account))
   }
 
   function copyIp(ip: string) {
@@ -329,7 +384,7 @@ function App() {
         <div className="language-switch" aria-label="Language"><Globe size={15}/>{(['vi', 'en', 'de'] as Language[]).map(item => <button key={item} className={language === item ? 'active' : ''} onClick={() => setLanguage(item)}>{item.toUpperCase()}</button>)}</div>
         <label className="mobile-language"><Globe size={17}/><select value={language} onChange={event => setLanguage(event.target.value as Language)} aria-label="Language"><option value="vi">VI · Tiếng Việt</option><option value="en">EN · English</option><option value="de">DE · Deutsch</option></select></label>
         <Button variant="ghost" size="icon-sm" className="theme-toggle" onClick={() => setTheme(current => current === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme">{theme === 'dark' ? <Sun size={17}/> : <Moon size={17}/>}</Button>
-        {view === 'totp' && <><Button variant="outline" className="install-button" onClick={() => void installApp()}><DownloadSimple size={16} weight="bold"/>{t.install}</Button><span className="session-note"><ShieldCheck size={15} weight="fill"/> {t.session}</span>{accounts.length > 0 && <Button variant="ghost" className="clear-button" onClick={() => setAccounts([])}><Trash size={16}/> {t.clear}</Button>}</>}
+        {view === 'totp' && <><Button variant="outline" className="install-button" onClick={() => void installApp()}><DownloadSimple size={16} weight="bold"/>{t.install}</Button><span className="session-note"><ShieldCheck size={15} weight="fill"/> {rememberKeys ? t.session : t.sessionOff}</span>{accounts.length > 0 && <Button variant="ghost" className="clear-button" onClick={() => setAccounts([])}><Trash size={16}/> {t.clear}</Button>}</>}
       </div>
     </header>
 
@@ -342,7 +397,10 @@ function App() {
           <span className="composer-eyebrow">{t.section}</span>
           <h2>{t.addTitle}</h2>
           <p>{t.addDescription}</p>
-          <span className="local-badge"><span className="local-badge-icon"><ShieldCheck size={14} weight="fill"/></span><span>{t.session}</span></span>
+          <label className="remember-toggle">
+            <Switch checked={rememberKeys} onCheckedChange={setRememberKeys} aria-label={t.remember} />
+            <span><strong>{t.remember}</strong><small>{t.rememberHint}</small></span>
+          </label>
         </aside>
         <div className="composer-form">
           <label className="paste-label" htmlFor="totp-keys">{t.addTitle}</label>
@@ -351,7 +409,7 @@ function App() {
           <div className="composer-footer"><span>{t.hint}</span><Button className="add-codes primary-action" onClick={addCodes}><span className="button-icon"><Plus size={18} weight="bold"/></span>{t.add}<ArrowRight size={17} weight="bold"/></Button></div>
         </div>
       </section>
-      {accounts.length === 0 ? <section className="empty-board"><div className="empty-mark"><Plus size={24}/></div><h2>{t.emptyTitle}</h2><p>{t.emptyText}</p></section> : <section className="code-section"><div className="code-section-header"><span>{accounts.length} {t.live}</span></div><div className="code-grid">{codes.map(({ account, code }, index) => { const seconds = remaining(account.period); return <article key={account.id} className="code-tile" style={{ '--index': index } as CSSProperties}><div className="tile-top"><span className="account-initial">{account.name.slice(0,1).toUpperCase()}</span><div><h2>{account.name}</h2><p>{t.expires} {seconds}s</p></div><div className={`expiry-ring ${expiryTone(account.period)}`} aria-label={`${t.expires} ${seconds}s`}><svg viewBox="0 0 36 36" aria-hidden="true"><circle className="expiry-ring-track" cx="18" cy="18" r="15.5" pathLength="100"/><circle className="expiry-ring-value" cx="18" cy="18" r="15.5" pathLength="100" strokeDasharray="100" strokeDashoffset={100 - progress(account.period)}/></svg><strong>{seconds}</strong></div><Button variant="ghost" size="icon-sm" className="remove-code" onClick={() => setAccounts(current => current.filter(item => item.id !== account.id))} aria-label={`${t.remove} ${account.name}`}><X size={17}/></Button></div><button className="code-button" onClick={() => copyCode(account, code)} aria-label={`${t.copy} ${account.name}`}><output>{formatCode(code)}</output><span>{copiedId === account.id ? <><Check size={16} weight="bold"/> {t.copied}</> : <><Copy size={16}/> {t.copy}</>}</span></button></article>})}</div></section>}
+      {accounts.length === 0 ? <section className="empty-board"><div className="empty-mark"><Plus size={24}/></div><h2>{t.emptyTitle}</h2><p>{t.emptyText}</p></section> : <section className="code-section"><div className="code-section-header"><span>{accounts.length} {t.live}</span></div><div className="code-grid">{codes.map(({ account, code }, index) => <TotpCard key={account.id} account={account} code={code} index={index} copied={copiedId === account.id} seconds={remaining(account.period)} progress={progress(account.period)} tone={expiryTone(account.period)} labels={{ expires: t.expires, copied: t.copied, copy: t.copy, remove: t.remove, email: t.email, emailPlaceholder: t.emailPlaceholder, addEmail: t.addEmail, editEmail: t.editEmail }} formatCode={formatCode} onCopiedChange={copied => handleCodeCopied(account, copied)} onRemove={() => setAccounts(current => current.filter(item => item.id !== account.id))} onEmailChange={email => updateAccountEmail(account.id, email)} />)}</div></section>}
       <p className="privacy-note"><ShieldCheck size={17} weight="fill"/> {t.privacy}</p>
     </section> : view === 'ip' ? <section className="board-shell ip-page">
       <div className="board-heading ip-heading"><div><h1>{t.ipTitle}</h1><p>{t.ipDescription}</p></div><div className="ip-actions"><Button variant="outline" className="refresh-button" onClick={getDeviceLocation} disabled={deviceLocationState === 'loading'}><CrosshairSimple size={17} className={deviceLocationState === 'loading' ? 'spin' : ''}/>{t.deviceLocation}</Button><Button variant="outline" className="refresh-button" onClick={() => void loadIp()} disabled={ipLoading}><ArrowsClockwise size={17} className={ipLoading ? 'spin' : ''}/>{t.refresh}</Button></div></div>
@@ -372,6 +430,10 @@ function App() {
       {whoisResult && <section className="domain-result"><div className="domain-result-title"><span>{t.whoisTab}</span><h2>{whoisResult.domain}</h2></div><div className="ip-grid"><InfoCard label={t.status} value={whoisResult.status || t.unavailable} /><InfoCard label={t.created} value={whoisResult.created || t.unavailable} /><InfoCard label={t.updated} value={whoisResult.updated || t.unavailable} /><InfoCard label={t.domainExpires} value={whoisResult.expires || t.unavailable} /><InfoCard label={t.age} value={whoisResult.age ? String(whoisResult.age) : t.unavailable} /><InfoCard label={t.registrar} value={whoisResult.registrar || t.unavailable} /></div><div className="nameservers"><span>{t.nameservers}</span>{whoisResult.nameservers.length ? <ul>{whoisResult.nameservers.map(item => <li key={item}>{item}</li>)}</ul> : <strong>{t.unavailable}</strong>}</div></section>}
       {hostedResult && <section className="domain-result"><div className="domain-result-title"><span>{t.hostedTab}</span><h2>{hostedResult.ip}</h2></div><div className="ip-grid"><InfoCard label={t.hostedCount} value={String(hostedResult.total ?? 0)} /><InfoCard label="Page" value={`${hostedResult.page ?? 1} / ${hostedResult.pages ?? 1}`} /></div><div className="nameservers"><span>{t.domainTab}</span>{hostedResult.domains.length ? <ul>{hostedResult.domains.map(item => <li key={item}>{item}</li>)}</ul> : <strong>{t.noDomains}</strong>}</div></section>}
     </section>}
+    <footer className="site-footer">
+      <span>Thông tin liên hệ</span>
+      <a href="https://t.me/kiratech1011" target="_blank" rel="noreferrer"><TelegramLogo size={17} weight="fill"/> @kiratech1011</a>
+    </footer>
     {toast && <div className="toast-notification" role="status"><span><Check size={18} weight="bold"/></span>{toast}</div>}
     {installHelpOpen && <div className="install-dialog-backdrop" role="presentation" onClick={() => setInstallHelpOpen(false)}><section className="install-dialog" role="dialog" aria-modal="true" aria-labelledby="install-dialog-title" onClick={event => event.stopPropagation()}><div className="install-dialog-handle"/><Button variant="ghost" size="icon-sm" className="install-dialog-close" onClick={() => setInstallHelpOpen(false)} aria-label={t.installClose}><X size={18}/></Button><span className="install-dialog-icon"><DownloadSimple size={22} weight="bold"/></span><span className="install-dialog-label">{installGuide.label}</span><h2 id="install-dialog-title">{t.installTitle}</h2><div className="install-tabs" role="tablist">{(['ios', 'android', 'desktop'] as InstallPlatform[]).map(platform => <button key={platform} className={installPlatform === platform ? 'active' : ''} onClick={() => setInstallPlatform(platform)} role="tab" aria-selected={installPlatform === platform}>{installGuide.tabs[platform]}</button>)}</div><ol className="install-steps">{installGuide.steps[installPlatform].map((step, index) => <li key={step}><span className="install-step-number">{index + 1}</span><span>{step}</span><span className="install-step-icon">{index === 0 ? installPlatform === 'ios' ? <UploadSimple size={21} weight="bold"/> : <Globe size={20}/> : index === 1 ? <Plus size={21}/> : <Check size={20} weight="bold"/>}</span></li>)}</ol><p className="install-tip">{installGuide.tip}</p></section></div>}
   </main>
@@ -379,6 +441,97 @@ function App() {
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return <article className="ip-card"><span>{label}</span><strong>{value}</strong></article>
+}
+
+function TotpCard({ account, code, index, copied, seconds, progress, tone, labels, formatCode, onCopiedChange, onRemove, onEmailChange }: { account: TotpAccount; code: string; index: number; copied: boolean; seconds: number; progress: number; tone: string; labels: { expires: string; copied: string; copy: string; remove: string; email: string; emailPlaceholder: string; addEmail: string; editEmail: string }; formatCode: (code: string) => string; onCopiedChange: (copied: boolean) => void; onRemove: () => void; onEmailChange: (email: string) => void }) {
+  const [isEditingEmail, setIsEditingEmail] = useState(false)
+  const [draftEmail, setDraftEmail] = useState(account.email)
+  const skipBlurSave = useRef(false)
+  const displayName = account.email || account.name
+  const hasEmail = Boolean(account.email.trim())
+
+  useEffect(() => {
+    if (!isEditingEmail) setDraftEmail(account.email)
+  }, [account.email, isEditingEmail])
+
+  useEffect(() => {
+    if (!isEditingEmail) return
+    const input = document.getElementById(`email-editor-${account.id}`) as HTMLInputElement | null
+    input?.focus()
+    input?.select()
+  }, [account.id, isEditingEmail])
+
+  function startEditingEmail() {
+    skipBlurSave.current = false
+    setDraftEmail(account.email)
+    setIsEditingEmail(true)
+  }
+
+  function saveEmail() {
+    if (skipBlurSave.current) {
+      skipBlurSave.current = false
+      return
+    }
+    const next = draftEmail.trim()
+    onEmailChange(next)
+    setDraftEmail(next)
+    setIsEditingEmail(false)
+  }
+
+  function cancelEmailEdit() {
+    skipBlurSave.current = true
+    setDraftEmail(account.email)
+    setIsEditingEmail(false)
+  }
+
+  return <article className="code-tile" style={{ '--index': index } as CSSProperties}>
+    <div className="tile-top">
+      <span className="account-initial">{displayName.slice(0, 1).toUpperCase()}</span>
+      <div className="account-title-row">
+        <h2>{displayName}</h2>
+        {!isEditingEmail && (
+          <button type="button" className="email-edit-trigger" onClick={startEditingEmail}>
+            {hasEmail ? <><PencilSimple size={13} /> {labels.editEmail}</> : labels.addEmail}
+          </button>
+        )}
+      </div>
+      <div className={`expiry-ring ${tone}`} aria-label={`${labels.expires} ${seconds}s`}>
+        <svg viewBox="0 0 36 36" aria-hidden="true">
+          <circle className="expiry-ring-track" cx="18" cy="18" r="15.5" pathLength="100"/>
+          <circle className="expiry-ring-value" cx="18" cy="18" r="15.5" pathLength="100" strokeDasharray="100" strokeDashoffset={100 - progress}/>
+        </svg>
+        <strong>{seconds}</strong>
+      </div>
+      <Button variant="destructive" size="icon-sm" className="remove-code" onClick={onRemove} aria-label={`${labels.remove} ${displayName}`}><X size={15}/></Button>
+    </div>
+    {isEditingEmail && (
+      <label className="account-email-editor">
+        <span>{labels.email}</span>
+        <Input
+          id={`email-editor-${account.id}`}
+          value={draftEmail}
+          onChange={event => setDraftEmail(event.target.value)}
+          onBlur={saveEmail}
+          onKeyDown={event => {
+            if (event.key === 'Enter') {
+              event.preventDefault()
+              saveEmail()
+            }
+            if (event.key === 'Escape') {
+              event.preventDefault()
+              cancelEmailEdit()
+            }
+          }}
+          placeholder={labels.emailPlaceholder}
+          autoComplete="email"
+        />
+      </label>
+    )}
+    <div className="code-button" aria-label={`${labels.copy} ${displayName}`}>
+      <output>{formatCode(code)}</output>
+      <CopyButton content={code} text variant="outline" label={labels.copy} copiedLabel={labels.copied} copied={copied} onCopiedChange={onCopiedChange} delay={1300} revealAnimate={false} iconAnimate="reveal" className="code-copy-button" />
+    </div>
+  </article>
 }
 
 function DeviceLocationCard({ location, labels }: { location: DeviceLocation; labels: { title: string; hint: string; coordinates: string; accuracy: string; meters: string; openMap: string } }) {
