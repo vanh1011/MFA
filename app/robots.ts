@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://mfa-tool.vercel.app'
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://2fa-kira.vercel.app'
   return {
     rules: { userAgent: '*', allow: '/', disallow: ['/api/'] },
     sitemap: `${base}/sitemap.xml`,

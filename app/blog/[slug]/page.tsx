@@ -38,7 +38,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const { slug } = await params
   const post = blogPosts[slug]
   if (!post) notFound()
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://mfa-tool.vercel.app'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://2fa-kira.vercel.app'
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
