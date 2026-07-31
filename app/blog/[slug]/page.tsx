@@ -23,13 +23,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       type: 'article',
       publishedTime: post.date,
       locale: 'vi_VN',
-      images: [{ url: '/kira-logo.png', width: 512, height: 512, alt: 'Logo Kira Tech' }],
+      images: [{ url: '/kira-social.png', width: 1200, height: 630, alt: 'Kira Tech — Công cụ lấy OTP 2FA' }],
     },
     twitter: {
       card: 'summary_large_image',
       title: post.title,
       description: siteDescription,
-      images: ['/kira-logo.png'],
+      images: ['/kira-social.png'],
     },
   }
 }
