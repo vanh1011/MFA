@@ -1,6 +1,8 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { isIP } from 'node:net'
 
+type JsonObject = Record<string, any>
+
 function send(response: ServerResponse, status: number, data: unknown) {
   response.statusCode = status
   response.setHeader('Content-Type', 'application/json; charset=utf-8')
@@ -24,7 +26,7 @@ export default async function handler(request: IncomingMessage, response: Server
 
   try {
     const result = await fetch(upstream)
-    const data = await result.json()
+    const data = await result.json() as JsonObject
     if (!result.ok || data.error) return send(response, 502, { error: data.error?.error_message ?? 'Hosted domain lookup failed.' })
     return send(response, 200, { ip: data.ip, total: data.total_domains, page: data.page, pages: data.total_pages, domains: Array.isArray(data.domains) ? data.domains : [] })
   } catch {

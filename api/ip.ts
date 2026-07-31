@@ -1,13 +1,23 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { isIP } from 'node:net'
 
+type JsonObject = Record<string, any>
+
 const languages = new Set(['vi', 'en', 'de'])
+const unsupportedTranslationMessage = 'translation is not available'
 
 function send(response: ServerResponse, status: number, data: unknown) {
   response.statusCode = status
   response.setHeader('Content-Type', 'application/json; charset=utf-8')
   response.setHeader('Cache-Control', 'private, no-store')
   response.end(JSON.stringify(data))
+}
+
+async function lookupIp(upstream: URL) {
+  const result = await fetch(upstream)
+  const data = await result.json() as JsonObject
+  const errorMessage = String(data.error?.error_message ?? data.error ?? '').toLowerCase()
+  return { result, data, errorMessage }
 }
 
 export default async function handler(request: IncomingMessage, response: ServerResponse) {
@@ -28,8 +38,11 @@ export default async function handler(request: IncomingMessage, response: Server
   if (languages.has(lang)) upstream.searchParams.set('lang', lang)
 
   try {
-    const result = await fetch(upstream)
-    const data = await result.json()
+    let { result, data, errorMessage } = await lookupIp(upstream)
+    if (!result.ok && errorMessage.includes(unsupportedTranslationMessage) && upstream.searchParams.has('lang')) {
+      upstream.searchParams.delete('lang')
+      ;({ result, data, errorMessage } = await lookupIp(upstream))
+    }
     if (!result.ok || data.error) return send(response, 502, { error: data.error?.error_message ?? 'IP lookup failed.' })
 
     return send(response, 200, {
