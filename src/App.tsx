@@ -145,10 +145,10 @@ function loadStoredAccounts(): TotpAccount[] {
 function loadRememberKeys() {
   try {
     const savedPreference = window.localStorage.getItem(TOTP_REMEMBER_KEY)
-    if (savedPreference) return savedPreference === 'true'
-    return Boolean(window.localStorage.getItem(TOTP_STORAGE_KEY))
+    if (savedPreference !== null) return savedPreference === 'true'
+    return true
   } catch {
-    return false
+    return true
   }
 }
 
