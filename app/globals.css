@@ -38,7 +38,10 @@ a { color: inherit; }
 .article-trust-alert { border-color: #c8dfd0; background: #f2f9f4; padding: 14px 16px; }
 .article-section { scroll-margin-top: 100px; }
 .article-section > [data-slot="separator"] { margin-bottom: 42px; }
-.article-section h2 { margin: 0 0 15px; font-size: 27px; letter-spacing: -.8px; }
+.article-section-heading { display: flex; align-items: center; gap: 13px; margin-bottom: 15px; }
+.article-section-icon { display: grid; width: 38px; height: 38px; flex: none; place-items: center; border: 1px solid #c8dfd0; border-radius: 11px; background: #edf7f0; color: #278f50; box-shadow: inset 0 1px rgba(255,255,255,.65); }
+.article-section-icon svg { width: 20px; height: 20px; }
+.article-section h2 { margin: 0; font-size: 27px; letter-spacing: -.8px; }
 .article-section h3 { margin: 26px 0 10px; font-size: 19px; }
 .article-section p, .article-section li { color: #45554b; font-size: 16px; line-height: 1.78; }
 .article-section ul, .article-section ol { padding-left: 22px; }
@@ -67,6 +70,9 @@ a { color: inherit; }
 .faq-accordion-item { scroll-margin-top: 100px; border-color: #d9e6dd; }
 .faq-accordion-trigger { padding: 20px 2px; font-size: 16px; font-weight: 700; letter-spacing: -.25px; text-decoration: none !important; }
 .faq-accordion-trigger:hover { color: #278f50; }
+.faq-question-heading { display: flex; align-items: center; gap: 12px; text-align: left; }
+.faq-question-icon { display: grid; width: 34px; height: 34px; flex: none; place-items: center; border: 1px solid #c8dfd0; border-radius: 10px; background: #edf7f0; color: #278f50; box-shadow: inset 0 1px rgba(255,255,255,.65); }
+.faq-question-icon svg { width: 18px; height: 18px; }
 .faq-accordion-content { padding: 0 36px 20px 2px; color: #45554b; font-size: 15px; line-height: 1.75; }
 .contact-channels { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: end; padding: 26px; border: 1px solid #c8dfd0; border-radius: 18px; background: #f2f9f4; }
 .contact-channels > div:first-child > span { color: #278f50; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
@@ -86,11 +92,13 @@ a { color: inherit; }
 .dark .article-trust-alert { border-color: #31513d; background: #17251c; }
 .dark .article-index a { color: #b7c9bd; }
 .dark .article-section code { border-color: #31513d; background: #17251c; color: #85dda6; }
+.dark .article-section-icon { border-color: #31513d; background: #17251c; color: #85dda6; box-shadow: inset 0 1px rgba(255,255,255,.04); }
 .dark .blog-grid { border-color: #2b3c32; background: #2b3c32; }
 .dark .blog-item { background: #151e19; }
 .dark .blog-item:hover { background: #1b2b21; }
 .dark .faq-block-heading p, .dark .faq-accordion-content { color: #a9b8ae; }
 .dark .faq-accordion, .dark .faq-accordion-item { border-color: #2b3c32; }
+.dark .faq-question-icon { border-color: #31513d; background: #17251c; color: #85dda6; box-shadow: inset 0 1px rgba(255,255,255,.04); }
 .dark .contact-channels { border-color: #31513d; background: #17251c; }
 .dark .contact-channels p { color: #a9b8ae; }
 
@@ -113,12 +121,17 @@ a { color: inherit; }
   .article-hero p { font-size: 15px; }
   .article-body { padding-top: 38px; }
   .article-section h2 { font-size: 24px; }
+  .article-section-heading { align-items: flex-start; gap: 11px; }
+  .article-section-icon { width: 34px; height: 34px; border-radius: 10px; }
+  .article-section-icon svg { width: 18px; height: 18px; }
   .article-section p, .article-section li { font-size: 15px; }
   .content-cta { align-items: flex-start; flex-direction: column; }
   .blog-grid { grid-template-columns: 1fr; }
   .faq-block-heading { align-items: flex-start; flex-direction: column; gap: 10px; }
   .faq-block-heading p { text-align: left; }
   .faq-accordion-trigger { font-size: 15px; }
+  .faq-question-heading { align-items: flex-start; gap: 10px; }
+  .faq-question-icon { width: 32px; height: 32px; }
   .contact-channels { grid-template-columns: 1fr; align-items: stretch; padding: 20px; }
   .contact-channel-actions { grid-template-columns: 1fr; }
 }

@@ -6,6 +6,7 @@ import { FaqAccordion } from '../../components/faq-accordion'
 import { pages } from '../../content/site-content'
 
 const staticPages = ['huong-dan', '2fa-la-gi', 'bao-mat-tai-khoan', 'faq', 'gioi-thieu', 'lien-he', 'chinh-sach-bao-mat', 'dieu-khoan-su-dung', 'cookie']
+const siteDescription = 'Công cụ lấy OTP 2FA xử lý trên thiết bị cùng thư viện kiến thức bảo mật.'
 
 export function generateStaticParams() {
   return staticPages.map(page => ({ page }))
@@ -17,9 +18,21 @@ export async function generateMetadata({ params }: { params: Promise<{ page: str
   if (!content) return {}
   return {
     title: content.title,
-    description: content.description,
+    description: siteDescription,
     alternates: { canonical: `/${page}` },
-    openGraph: { title: content.title, description: content.description, type: 'article', locale: 'vi_VN' },
+    openGraph: {
+      title: content.title,
+      description: siteDescription,
+      type: 'article',
+      locale: 'vi_VN',
+      images: [{ url: '/kira-logo.png', width: 512, height: 512, alt: 'Logo Kira Tech' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: content.title,
+      description: siteDescription,
+      images: ['/kira-logo.png'],
+    },
   }
 }
 

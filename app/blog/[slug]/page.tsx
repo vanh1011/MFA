@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import { ContentPage } from '../../../components/content-page'
 import { blogPosts } from '../../../content/site-content'
 
+const siteDescription = 'Công cụ lấy OTP 2FA xử lý trên thiết bị cùng thư viện kiến thức bảo mật.'
+
 export function generateStaticParams() {
   return Object.keys(blogPosts).map(slug => ({ slug }))
 }
@@ -13,9 +15,22 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!post) return {}
   return {
     title: post.title,
-    description: post.description,
+    description: siteDescription,
     alternates: { canonical: `/blog/${slug}` },
-    openGraph: { title: post.title, description: post.description, type: 'article', publishedTime: post.date, locale: 'vi_VN' },
+    openGraph: {
+      title: post.title,
+      description: siteDescription,
+      type: 'article',
+      publishedTime: post.date,
+      locale: 'vi_VN',
+      images: [{ url: '/kira-logo.png', width: 512, height: 512, alt: 'Logo Kira Tech' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: siteDescription,
+      images: ['/kira-logo.png'],
+    },
   }
 }
 

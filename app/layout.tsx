@@ -7,20 +7,28 @@ import './globals.css'
 const geist = Geist({ subsets: ['latin', 'latin-ext'], variable: '--font-geist' })
 const geistMono = Geist_Mono({ subsets: ['latin', 'latin-ext'], variable: '--font-geist-mono' })
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://mfa-tool.vercel.app'
+const siteDescription = 'Công cụ lấy OTP 2FA xử lý trên thiết bị cùng thư viện kiến thức bảo mật.'
+const socialImage = { url: '/kira-logo.png', width: 512, height: 512, alt: 'Logo Kira Tech' }
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: { default: 'MFA Tool — Mã 2FA và kiến thức bảo mật', template: '%s | MFA Tool' },
-  description: 'Tạo mã TOTP ngay trên thiết bị và đọc hướng dẫn thực tế về 2FA, phishing, recovery code và bảo vệ tài khoản.',
+  description: siteDescription,
   alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
     locale: 'vi_VN',
     siteName: 'MFA Tool',
     title: 'MFA Tool — Mã 2FA và kiến thức bảo mật',
-    description: 'Công cụ TOTP xử lý trên thiết bị cùng thư viện kiến thức bảo mật tiếng Việt.',
+    description: siteDescription,
+    images: [socialImage],
   },
-  twitter: { card: 'summary_large_image' },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'MFA Tool — Mã 2FA và kiến thức bảo mật',
+    description: siteDescription,
+    images: ['/kira-logo.png'],
+  },
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -30,7 +38,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     name: 'MFA Tool',
     url: siteUrl,
     inLanguage: 'vi-VN',
-    description: 'Công cụ tạo mã TOTP trên thiết bị và nội dung hướng dẫn bảo mật tài khoản.',
+    description: siteDescription,
+    image: `${siteUrl}/kira-logo.png`,
   }
 
   return (

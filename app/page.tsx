@@ -4,7 +4,18 @@ import App from '../src/App'
 
 export const metadata: Metadata = {
   title: 'Công cụ lấy mã 2FA TOTP',
-  description: 'Tạo mã TOTP từ khóa Base32 ngay trên thiết bị, tra cứu IP và thông tin tên miền.',
+  description: 'Công cụ lấy OTP 2FA xử lý trên thiết bị cùng thư viện kiến thức bảo mật.',
+  openGraph: {
+    title: 'Công cụ lấy mã 2FA TOTP',
+    description: 'Công cụ lấy OTP 2FA xử lý trên thiết bị cùng thư viện kiến thức bảo mật.',
+    images: [{ url: '/kira-logo.png', width: 512, height: 512, alt: 'Logo Kira Tech' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Công cụ lấy mã 2FA TOTP',
+    description: 'Công cụ lấy OTP 2FA xử lý trên thiết bị cùng thư viện kiến thức bảo mật.',
+    images: ['/kira-logo.png'],
+  },
 }
 
 export default function HomePage() {
