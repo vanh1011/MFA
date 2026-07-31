@@ -789,10 +789,34 @@ button[data-copy-button].code-copy-button[data-copied] {
 
 .paste-label {
   display: block;
-  margin-bottom: 9px;
+  margin: 0;
   color: #26392d;
   font-size: 12px;
   font-weight: 700;
+}
+
+.paste-field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 9px;
+}
+
+.paste-clipboard-button {
+  height: 34px !important;
+  gap: 6px !important;
+  border-color: #b9d9c4 !important;
+  border-radius: 10px !important;
+  color: #1f7a45 !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
+.paste-clipboard-button:hover {
+  border-color: #2aa95e !important;
+  background: #eaf8ef !important;
+  color: #146537 !important;
 }
 
 .composer > .batch-input,
@@ -847,6 +871,8 @@ button[data-copy-button].code-copy-button[data-copied] {
 .board-page.dark .composer-aside .local-badge,
 .board-page.dark .composer-aside .remember-toggle { color: #c7d8cd; }
 .board-page.dark .paste-label { color: #dce9df; }
+.board-page.dark .paste-clipboard-button { border-color: #3f6b4d !important; background: #132119 !important; color: #9ee9b8 !important; }
+.board-page.dark .paste-clipboard-button:hover { border-color: #63d98a !important; background: #193822 !important; color: #c7f7d7 !important; }
 .board-page.dark .composer-form .batch-input { border-color: #385343 !important; background: #111a14 !important; color: #eef6f0 !important; }
 .board-page.dark .composer-form .composer-footer { border-top-color: #30463a; }
 .board-page.dark .composer-form .primary-action { background: #55cc7b !important; border-color: #55cc7b !important; color: #092716 !important; }
@@ -862,6 +888,8 @@ button[data-copy-button].code-copy-button[data-copied] {
   .composer-aside .local-badge,
   .composer-aside .remember-toggle { margin-top: 14px; padding-top: 0; }
   .composer-form { padding: 20px; }
+  .paste-field-header { align-items: stretch; }
+  .paste-clipboard-button { height: 38px !important; padding: 0 12px !important; font-size: 13px !important; }
   .composer-form .batch-input { min-height: 126px !important; }
   .composer-form .composer-footer { align-items: stretch; }
 }
@@ -970,6 +998,11 @@ button[data-copy-button].code-copy-button[data-copied] {
   .domain-search input,
   .mobile-language select {
     font-size: 16px !important;
+  }
+
+  .batch-input::placeholder {
+    font-size: 13px !important;
+    line-height: 1.45;
   }
 
   .toast-notification {
