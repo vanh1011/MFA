@@ -93,6 +93,8 @@ export default defineConfig(({ mode }) => {
         workbox: {
           navigateFallback: '/index.html',
           runtimeCaching: [],
+          skipWaiting: true,
+          clientsClaim: true,
         },
       }),
       localApi(env.IP2LOCATION_API_KEY),

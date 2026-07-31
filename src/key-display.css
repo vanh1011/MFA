@@ -385,6 +385,9 @@ button[data-copy-button].code-copy-button[data-copied] {
 
 .toast-notification { position: fixed; right: max(20px, calc((100vw - 1120px) / 2)); bottom: 24px; z-index: 20; display: flex; align-items: center; gap: 10px; padding: 11px 15px 11px 11px; border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--line)); border-radius: 14px; background: color-mix(in srgb, var(--surface) 96%, transparent); box-shadow: 0 18px 36px -22px rgba(13, 56, 30, .46), inset 0 1px 0 rgba(255,255,255,.82); color: var(--text); font-size: 13px; font-weight: 700; animation: toast-enter .34s cubic-bezier(.16,1,.3,1) both; }
 .toast-notification > span { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 9px; background: var(--accent); color: #fff; }
+.update-notification { position: fixed; right: max(20px, calc((100vw - 1120px) / 2)); bottom: 24px; z-index: 21; display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 11px; border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--line)); border-radius: 15px; background: color-mix(in srgb, var(--surface) 97%, transparent); box-shadow: 0 18px 36px -22px rgba(13, 56, 30, .46), inset 0 1px 0 rgba(255,255,255,.82); color: var(--text); font-size: 13px; font-weight: 700; animation: toast-enter .34s cubic-bezier(.16,1,.3,1) both; }
+.update-notification > span { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 10px; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+.update-action { height: 32px !important; margin-left: 4px; border-radius: 10px !important; background: var(--accent) !important; color: #10251a !important; font-size: 12px !important; font-weight: 800 !important; }
 @keyframes toast-enter { from { opacity: 0; transform: translateY(12px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
 .board-page.dark .composer { position: relative; overflow: hidden; border-radius: 22px; padding: 28px; }
@@ -393,6 +396,9 @@ button[data-copy-button].code-copy-button[data-copied] {
 .board-page.dark .local-badge { border-color: #3d624a; background: #172e20; color: #c6e9d1; }
 .board-page.dark .composer-footer { border-top-color: #304239; }
 .board-page.dark .toast-notification { background: #17211c; border-color: #3d654a; color: #eef6f0; box-shadow: 0 18px 36px -22px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.05); }
+.board-page.dark .update-notification { background: #17211c; border-color: #3d654a; color: #eef6f0; box-shadow: 0 18px 36px -22px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.05); }
+.board-page.dark .update-notification > span { background: #1c4e2d; color: #8de8aa; }
+.board-page.dark .update-action { background: #78dca0 !important; color: #082917 !important; }
 
 @media (max-width: 760px) {
   .board-page.light .composer, .board-page.dark .composer { padding: 20px; border-radius: 18px; }
@@ -401,6 +407,8 @@ button[data-copy-button].code-copy-button[data-copied] {
   .local-badge { align-self: flex-start; }
   .primary-action { width: 100%; justify-content: center; }
   .toast-notification { right: 16px; bottom: 16px; left: 16px; }
+  .update-notification { right: 16px; bottom: 16px; left: 16px; }
+  .update-action { margin-left: auto; }
 }
 
 /* TOTP composer: one deliberate action surface instead of a large generic card. */
@@ -957,6 +965,13 @@ button[data-copy-button].code-copy-button[data-copied] {
 }
 
 @media (max-width: 760px) {
+  .batch-input,
+  .account-email-editor input,
+  .domain-search input,
+  .mobile-language select {
+    font-size: 16px !important;
+  }
+
   .toast-notification {
     top: max(14px, env(safe-area-inset-top));
     right: 16px;
